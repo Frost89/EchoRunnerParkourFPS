@@ -32,8 +32,8 @@ UParkourComponent::UParkourComponent()
 	QuickMantleSpeed = 20.0;
 	VerticalWallRunSpeed = 300;
 	VerticalWallRunCurrentSpeed = VerticalWallRunSpeed;
-	LedgeGrabJumpOffForce = 300.0;
-	LedgeGrabJumpOffHeight = 400.0;
+	LedgeGrabJumpOffForce = 500.0;
+	LedgeGrabJumpOffHeight = 500.0;
 	SprintSpeed = 1000.0;
 	VerticalWallRunTime = 1.0;
 	SlideImpulseAmount = 600.0;
@@ -271,7 +271,7 @@ void UParkourComponent::VerticalWallRunMovement()
 		bool changed = SetParkourMode(EParkourMode::VERTICALWALLRUN);
 		if (changed)
 		{
-			CorrectVerticalWallRunLocation();
+			//CorrectVerticalWallRunLocation();
 		}
 		FVector VertWROverride = VerticalWallRunNormal * -600.0;
 		Character->LaunchCharacter(FVector(VertWROverride.X, VertWROverride.Y, VerticalWallRunSpeed), true, true);

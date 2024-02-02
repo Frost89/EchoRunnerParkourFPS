@@ -242,6 +242,10 @@ protected:
 	float WallRunSpeed;
 	UPROPERTY(EditDefaultsOnly, Category = "Wall Running")
 	float WallRunSprintSpeed;
+	UPROPERTY(EditDefaultsOnly, Category = "Wall Running")
+	float LedgeGrabJumpOffForce;
+	UPROPERTY(EditDefaultsOnly, Category = "Wall Running")
+	float LedgeGrabJumpOffHeight;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,Category = "Wall Running")
 	float VerticalWallRunTime;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Wall Running")
@@ -287,8 +291,6 @@ private:
 	FVector LedgeFloorPosition;
 	FVector LedgeClimbWallNormal;
 	FVector LedgeClimbWallPosition;
-	float LedgeGrabJumpOffForce;
-	float LedgeGrabJumpOffHeight;
 	bool bLedgeCloseToGround;
 
 	bool bCameraShake;
