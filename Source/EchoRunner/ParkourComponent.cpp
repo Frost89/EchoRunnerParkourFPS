@@ -5,6 +5,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "Math/UnrealMathUtility.h"
+#include "Math/Vector.h"
 #include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -27,6 +28,7 @@ UParkourComponent::UParkourComponent()
 	WallJumpScale = 600.0;
 	bCameraShake = true;
 	bAlwaysSprint = true;
+	bCanDash = true;
 	MantleHeight = 44.0;
 	MantleSpeed = 10.0;
 	QuickMantleSpeed = 20.0;
@@ -37,6 +39,9 @@ UParkourComponent::UParkourComponent()
 	SprintSpeed = 1000.0;
 	VerticalWallRunTime = 1.0;
 	SlideImpulseAmount = 600.0;
+
+	TimesJumped = 0;
+	MaxJumps = 2;
 	// ...
 }
 
@@ -52,6 +57,7 @@ void UParkourComponent::BeginPlay()
 
 void UParkourComponent::JumpEvent()
 {
+	JumpMovement();
 	if (CurrentParkourMode == EParkourMode::NONE)
 	{
 		if (CharacterMovement->IsFalling() == false)
@@ -68,9 +74,19 @@ void UParkourComponent::JumpEvent()
 
 void UParkourComponent::LandEvent()
 {
+	TimesJumped = 0;
 	EndEvents();
 	CloseGates();
 	PlayCameraShake(JumpLand);
+}
+
+void UParkourComponent::DashEvent()
+{
+	if (bCanDash)
+	{
+		Character->LaunchCharacter(GetDashLaunchVelocity(), true, false);
+		bCanDash = false;
+	}
 }
 
 void UParkourComponent::Initialise(ACharacter* Char)
@@ -269,10 +285,10 @@ void UParkourComponent::VerticalWallRunMovement()
 		VerticalWallRunLocation = FwdTracerHit.Location;
 		VerticalWallRunNormal = FwdTracerHit.Normal;
 		bool changed = SetParkourMode(EParkourMode::VERTICALWALLRUN);
-		if (changed)
+		/*if (changed)
 		{
-			//CorrectVerticalWallRunLocation();
-		}
+			CorrectVerticalWallRunLocation();
+		}*/
 		FVector VertWROverride = VerticalWallRunNormal * -600.0;
 		Character->LaunchCharacter(FVector(VertWROverride.X, VertWROverride.Y, VerticalWallRunSpeed), true, true);
 	}
@@ -702,6 +718,17 @@ void UParkourComponent::ToggleCrouch()
 	}
 }
 
+void UParkourComponent::JumpMovement()
+{
+	if (CanJump())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Jump Movement"));
+		FVector JumpVelocity = FVector(0, 0, CharacterMovement->JumpZVelocity);
+		Character->LaunchCharacter(JumpVelocity, false, true);
+		TimesJumped++;
+	}
+}
+
 void UParkourComponent::OpenGates()
 {
 	OpenWallRunGate();
@@ -737,6 +764,7 @@ void UParkourComponent::JumpEvents()
 	SlideJump();
 	CrouchJump();
 	SprintJump();
+	TimesJumped++;
 }
 
 void UParkourComponent::EndEvents()
@@ -786,6 +814,7 @@ bool UParkourComponent::SetParkourMode(EParkourMode NewMode)
 	else
 	{
 		ParkourChanged(CurrentParkourMode, NewMode);
+		TimesJumped = 0;
 		return true;
 	}
 }
@@ -964,6 +993,15 @@ FRotator UParkourComponent::GetLedgeTargetRotation()
 	return FRotator(RelativeRot.Pitch, NewYaw, RelativeRot.Roll);
 }
 
+FVector UParkourComponent::GetDashLaunchVelocity()
+{
+	FVector CharVel = Character->GetVelocity();
+	FVector NewVel = FVector(CharVel.X, CharVel.Y, 0) * DashScale;
+	float range = CharacterMovement->IsFalling() ? DashRange : (DashRange * MaxRangeScale);
+	FVector LaunchVel = NewVel.GetClampedToMaxSize2D(range);
+	return LaunchVel;
+}
+
 void UParkourComponent::GetMantleVectors(FVector& OutEyes, FVector& OutFeet)
 {
 	//Eyes
@@ -1043,6 +1081,11 @@ void UParkourComponent::GrabLedge()
 bool UParkourComponent::LedgeMantleOrVertical()
 {
 	return (CurrentParkourMode == EParkourMode::LEDGEGRAB or CurrentParkourMode == EParkourMode::VERTICALWALLRUN or CurrentParkourMode == EParkourMode::MANTLE);
+}
+
+bool UParkourComponent::CanJump()
+{
+	return (TimesJumped < MaxJumps);
 }
 
 FVector UParkourComponent::GetSlideVector()

@@ -46,6 +46,8 @@ protected:
 	void JumpEvent();
 	UFUNCTION(BlueprintCallable)
 	void LandEvent();
+	UFUNCTION(BlueprintCallable)
+	void DashEvent();
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
 	void UpdateEvent();
@@ -153,6 +155,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void ToggleCrouch();
 
+	UFUNCTION(BlueprintCallable)
+	void JumpMovement();
+
 	//ManipulateGatesAndQueues
 	UFUNCTION(BlueprintCallable)
 	void OpenGates();
@@ -203,7 +208,7 @@ protected:
 	FRotator GetVerticalWallRunTargetRotation();
 	FVector GetLedgeTargetVector();
 	FRotator GetLedgeTargetRotation();
-
+	FVector GetDashLaunchVelocity();
 
 	void GetMantleVectors(FVector& OutEyes, FVector& OutFeet);
 	float InterpolateGravity();
@@ -219,7 +224,7 @@ protected:
 	bool CanSlide();
 	void GrabLedge();
 	bool LedgeMantleOrVertical();
-
+	bool CanJump();
 
 	UPROPERTY(BlueprintReadOnly, Category = "Character Properties")
 	ACharacter* Character;
@@ -237,6 +242,8 @@ protected:
 	float DefaultCrouchSpeed;
 	UPROPERTY(BlueprintReadOnly, Category = "Character Properties")
 	bool bDefaultUseControllerRotationYaw;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Dash")
+	bool bCanDash;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Wall Running")
 	float WallRunSpeed;
@@ -259,6 +266,18 @@ protected:
 	float SprintSpeed;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Slide")
 	float SlideImpulseAmount;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dash")
+	float DashScale = 15.0;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dash")
+	float DashRange = 2000.0;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dash")
+	float MaxRangeScale = 100.0;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Jump")
+	int32 TimesJumped;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Jump")
+	int32 MaxJumps;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Parkour and Movement")
 	TEnumAsByte<EMovementMode> PrevMovementMode;
